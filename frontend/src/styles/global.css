@@ -1,0 +1,350 @@
+/* ============================================================
+   智能旅行规划助手 — 全局样式
+   ============================================================ */
+
+@import './tokens.css';
+
+/* ========== Reset & Base ========== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--text-body);
+  line-height: var(--lh-relaxed);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* ========== Typography ========== */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-tight);
+  color: var(--color-text-primary);
+}
+
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); }
+h4 { font-size: var(--text-h4); }
+
+p {
+  margin-bottom: var(--space-3);
+  color: var(--color-text-secondary);
+}
+
+a {
+  color: var(--color-sky);
+  text-decoration: none;
+  transition: color var(--dur-fast) var(--ease-in-out);
+}
+a:hover {
+  color: var(--color-brand-600);
+}
+
+/* ========== Scrollbar ========== */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ========== Selection ========== */
+::selection {
+  background: var(--color-brand-200);
+  color: var(--color-text-primary);
+}
+
+/* ========== Utility ========== */
+.text-center { text-align: center; }
+.text-left { text-align: left; }
+.text-right { text-align: right; }
+
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.text-tertiary { color: var(--color-text-tertiary); }
+.text-brand { color: var(--color-brand-500); }
+.text-success { color: var(--color-success); }
+.text-warning { color: var(--color-warning); }
+.text-error { color: var(--color-error); }
+.text-info { color: var(--color-info); }
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ========== Fade Transitions ========== */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity var(--dur-normal) var(--ease-in-out);
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all var(--dur-slide) var(--ease-out-expo);
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(12px);
+}
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ========== Ant Design Vue Overrides ========== */
+
+/* Button brand override */
+.ant-btn-primary {
+  background-color: var(--color-brand-500) !important;
+  border-color: var(--color-brand-500) !important;
+  box-shadow: var(--btn-primary-shadow) !important;
+}
+.ant-btn-primary:hover {
+  background-color: var(--color-brand-600) !important;
+  border-color: var(--color-brand-600) !important;
+  box-shadow: var(--btn-primary-shadow-hover) !important;
+}
+.ant-btn-primary:active {
+  background-color: var(--color-brand-700) !important;
+  border-color: var(--color-brand-700) !important;
+}
+
+/* Input focus ring */
+.ant-input:focus,
+.ant-input-focused {
+  border-color: var(--color-brand-500) !important;
+  box-shadow: var(--input-focus-shadow) !important;
+}
+.ant-input:hover {
+  border-color: var(--color-brand-400) !important;
+}
+
+/* Card */
+.ant-card {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-card) !important;
+}
+
+/* Modal */
+.ant-modal-content {
+  border-radius: var(--radius-lg) !important;
+}
+
+/* Drawer */
+.ant-drawer-content-wrapper {
+  box-shadow: var(--shadow-drawer) !important;
+}
+.ant-drawer-content {
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg) !important;
+}
+
+/* Tag */
+.ant-tag {
+  border-radius: var(--radius-pill) !important;
+}
+
+/* Skeleton */
+.ant-skeleton-element .ant-skeleton-avatar {
+  border-radius: var(--radius-sm) !important;
+}
+
+/* Spin brand color */
+.ant-spin-dot-item {
+  background-color: var(--color-brand-500) !important;
+}
+
+/* Slider brand */
+.ant-slider-track {
+  background-color: var(--color-brand-500) !important;
+}
+.ant-slider-handle {
+  border-color: var(--color-brand-500) !important;
+}
+.ant-slider-handle:focus {
+  box-shadow: 0 0 0 5px rgba(232, 168, 124, 0.12) !important;
+}
+
+/* Switch brand */
+.ant-switch-checked {
+  background-color: var(--color-brand-500) !important;
+}
+
+/* Notification */
+.ant-notification-notice {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-toast) !important;
+}
+
+/* Progress */
+.ant-progress-bg {
+  background-color: var(--color-brand-500) !important;
+}
+
+/* Tabs */
+.ant-tabs-ink-bar {
+  background: var(--color-brand-500) !important;
+}
+.ant-tabs-tab:hover {
+  color: var(--color-brand-600) !important;
+}
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: var(--color-brand-500) !important;
+}
+
+/* ========== 🎨 艺术装饰工具类 ========== */
+
+/* 渐变文字 */
+.text-gradient {
+  background: var(--gradient-warm);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-sunset {
+  background: var(--gradient-sunset);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.text-gradient-ocean {
+  background: var(--gradient-ocean);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 装饰字体 */
+.font-decorative {
+  font-family: var(--font-decorative);
+}
+
+/* 装饰性背景圆点 — 用于背景装饰 */
+.bg-dots {
+  background-image: radial-gradient(var(--color-art-dot) 2px, transparent 2px);
+  background-size: 24px 24px;
+}
+
+.bg-dots-large {
+  background-image: radial-gradient(var(--color-art-dot) 3px, transparent 3px);
+  background-size: 40px 40px;
+}
+
+/* 装饰性条纹 — 类似旅行手账 */
+.bg-stripes {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 20px,
+    var(--color-art-line) 20px,
+    var(--color-art-line) 21px
+  );
+}
+
+/* 卡片顶部装饰色带 */
+.card-stripe {
+  position: relative;
+  overflow: hidden;
+}
+.card-stripe::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--card-stripe-height);
+  background: var(--card-ribbon-bg);
+}
+
+/* 装饰标签 — 斜角裁切风格 */
+.tag-sharp {
+  clip-path: polygon(0 0, 100% 0, 100% 70%, 90% 100%, 0 100%);
+}
+
+/* 浮动装饰圆 */
+.deco-circle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.deco-circle--sm {
+  width: 60px;
+  height: 60px;
+}
+.deco-circle--md {
+  width: 120px;
+  height: 120px;
+}
+.deco-circle--lg {
+  width: 240px;
+  height: 240px;
+}
+.deco-circle--brand {
+  background: var(--color-art-dot);
+}
+.deco-circle--accent {
+  background: var(--color-art-accent);
+}
+.deco-circle--gold {
+  background: var(--color-art-gold);
+}
+
+/* 装饰虚线分隔符 */
+.divider-dotted {
+  border: none;
+  height: 2px;
+  background: repeating-linear-gradient(
+    90deg,
+    var(--color-art-line) 0px,
+    var(--color-art-line) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+}
+
+/* 发光阴影 */
+.shadow-glow {
+  box-shadow: var(--shadow-glow-brand);
+}
+
+/* 毛玻璃升级版 — 更艺术 */
+.glass-art {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(20px) saturate(1.2);
+  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(139, 115, 85, 0.08);
+}

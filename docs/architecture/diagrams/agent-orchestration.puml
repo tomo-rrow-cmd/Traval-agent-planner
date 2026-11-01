@@ -1,0 +1,225 @@
+@startuml 后端智能体编排架构
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam defaultFontName "Noto Sans CJK SC, Microsoft YaHei, WenQuanYi Micro Hei, Sans-serif"
+skinparam defaultFontSize 13
+skinparam packageBorderColor #3B82F6
+skinparam packageBackgroundColor #EFF6FF
+skinparam rectangleBorderColor #3B82F6
+skinparam rectangleBackgroundColor #F0F9FF
+skinparam componentBorderColor #10B981
+skinparam componentBackgroundColor #ECFDF5
+skinparam databaseBorderColor #8B5CF6
+skinparam databaseBackgroundColor #F5F3FF
+skinparam nodeBorderColor #F59E0B
+skinparam nodeBackgroundColor #FFFBEB
+skinparam arrowColor #64748B
+skinparam noteBackgroundColor #FEF9C3
+skinparam noteBorderColor #CA8A04
+skinparam titleFontSize 22
+skinparam titleFontColor #1E293B
+
+title AI 旅行规划 — 后端智能体编排架构总览
+
+' ============================================================
+'  LAYER 1: API 入口层
+' ============================================================
+package "🌐 API 入口层 (FastAPI)" as APILayer #EFF6FF {
+
+  rectangle "POST /api/v1/chat/stream\nSSE 流式对话 + 规划生成" as ChatAPI
+  rectangle "GET/POST /api/v1/plans/**\n旅行方案 CRUD" as PlanAPI
+  rectangle "POST /api/v1/trips/**\n行程执行 + 实时调整" as TripAPI
+  rectangle "POST /api/v1/travelogue/**\n游记生成" as TravelogueAPI
+
+  note right of ChatAPI
+    用户发送自然语言消息
+    → 后端 SSE 流式返回
+    (progress / done / error)
+  end note
+}
+
+' ============================================================
+'  LAYER 2: 编排器 (Orchestrator)
+' ============================================================
+package "🎯 编排器 (LangGraph Pipeline)" as Orchestrator #F0F9FF {
+
+  rectangle "run_pipeline()\n入口函数" as PipelineEntry
+
+  component "planner_graph\n(StateGraph)" as StateGraph {
+    node "fetch_weather\n🌤️ 天气预取" as N0
+    node "parallel_planning\n🏛️🍜🏨 三路并行" as N1
+    node "decision_r1\n✅ 定稿景点+餐厅" as N2
+    node "detail_enrich\n🔍 深度扩展" as N3
+    node "decision_r2\n🏆 交通评分选酒店" as N4
+    node "plan_traffic\n🚇 完整交通规划" as N5
+    node "budget\n💰 预算核算+最终方案" as N6
+    node "adjust\n🔧 参数调整" as N7
+  }
+
+  N0 -down-> N1
+  N1 -down-> N2
+  N2 -down-> N3
+  N3 -down-> N4
+  N4 -down-> N5
+  N5 -down-> N6
+  N6 -down-> N7 : should_retry
+  N7 -up-> N1 : 重跑并行规划
+  N6 --> [END] : done
+
+  note right of StateGraph
+    PlannerState: TypedDict 贯穿全流程
+    · destination / days / budget
+    · daily_plan / meal_plan / hotel_plan
+    · traffic / weather_forecast
+    · retry_count / should_retry
+  end note
+}
+
+' ============================================================
+'  LAYER 3: 智能体层 (Multi-Agent System)
+' ============================================================
+package "🤖 智能体层 (Multi-Agent System)" as AgentLayer #ECFDF5 {
+
+  package "并行规划 Agents" as ParallelAgents {
+    component "AttractionAgent\n景点推荐" as A1
+    component "FoodAgent\n美食推荐" as A2
+    component "HotelAgent\n住宿推荐" as A3
+  }
+
+  package "决策 & 深化 Agents" as DecisionAgents {
+    component "DecisionAgent\nR1 定稿景点+餐厅\nR2 交通评分选酒店" as A4
+    component "DetailAgent\n深度详情展开" as A5
+    component "TrafficAgent\n交通规划\n(高德+12306)" as A6
+    component "BudgetAgent\n预算核算+方案输出" as A7
+  }
+
+  package "运行时 Agents" as RuntimeAgents {
+    component "WeatherAgent\n天气影响分析" as A8
+    component "AdjustAgent\n动态调整\n(天气/时间/预算)" as A9
+  }
+
+  package "内容生成 Agents" as ContentAgents {
+    component "TravelogueAgent\n游记生成" as A10
+    component "UserInteractionAgent\n用户交互确认" as A11
+    component "SouvenirAgent\n纪念品推荐" as A12
+  }
+
+  note bottom of AgentLayer
+    所有 Agent 继承 BaseAgent
+    · run(input_data) → dict
+    · execute_tools() — LLM ⇄ Tool 循环
+    · call_llm() / call_llm_with_tools()
+    · validate_output() — Pydantic 校验
+  end note
+}
+
+' ============================================================
+'  LAYER 4: LLM & 工具层
+' ============================================================
+package "🧠 LLM & 工具层" as LLMLayer #FFFBEB {
+
+  component "DeepSeekLLM\n(OpenAI 兼容 API)\nchat / chat_stream / chat_with_tools" as LLM
+
+  package "工具注册表 (Tool Registry)" as ToolReg {
+    rectangle "meituan_travel\n美团酒旅查询" as T1
+    rectangle "search_hotels\n高德酒店搜索" as T2
+    rectangle "search_attractions\n高德景点搜索" as T3
+    rectangle "search_restaurants\n高德餐厅搜索" as T4
+    rectangle "get_weather\n天气查询" as T5
+    rectangle "railway_12306\n火车票查询" as T6
+  }
+
+  LLM -- ToolReg : Function Calling
+}
+
+' ============================================================
+'  LAYER 5: 第三方服务层
+' ============================================================
+package "🌍 第三方服务" as ThirdParty #F5F3FF {
+
+  database "美团酒旅\n(酒店价格/评分)" as Meituan
+  database "高德地图 Amap\n(POI搜索/地理编码/路径规划)" as Amap
+  database "12306 铁路\n(火车票/时刻表)" as Railway
+  database "和风天气 QWeather\n(7日预报)" as QWeather
+  database "Chroma 向量库\n(POI RAG 召回)" as Chroma
+}
+
+' ============================================================
+'  LAYER 6: 数据持久层
+' ============================================================
+package "💾 数据持久层" as DataLayer #F5F3FF {
+
+  database "PostgreSQL\nSQLAlchemy ORM" as PG {
+    rectangle "Plan 表\n(旅行方案)" as PlanTable
+    rectangle "Trip 表\n(行程执行)" as TripTable
+    rectangle "Conversation 表\n(对话历史)" as ConvTable
+  }
+}
+
+' ============================================================
+'  连线关系
+' ============================================================
+
+' API → Orchestrator
+ChatAPI -down-> PipelineEntry : SSE 流
+PlanAPI -down-> DataLayer : CRUD
+TripAPI -down-> A9 : 异常检测 & 调整
+
+' Orchestrator → Agents
+PipelineEntry -down-> StateGraph
+N1 -down-> A1 : asyncio.gather
+N1 -down-> A2 : asyncio.gather
+N1 -down-> A3 : asyncio.gather
+N2 -down-> A4 : run_round1()
+N3 -down-> A5
+N4 -down-> A4 : run_round2()
+N5 -down-> A6
+N6 -down-> A7
+N0 -down-> A8
+
+' Agents → LLM
+A1 -left-> LLM : call_llm / execute_tools
+A2 -left-> LLM
+A3 -left-> LLM
+A4 -left-> LLM
+A5 -left-> LLM
+A6 -left-> LLM
+A7 -left-> LLM
+A8 -left-> LLM
+A9 -left-> LLM
+
+' Agents → Third Party
+A3 -down-> Meituan : 酒店查询
+A3 -down-> Chroma : RAG 兜底
+A1 -down-> Amap : POI 搜索
+A2 -down-> Amap : 餐厅搜索
+A6 -down-> Amap : 路径规划
+A6 -down-> Railway : 火车票
+A8 -down-> QWeather : 天气预报
+
+' LLM → Third Party (via Tool Registry)
+LLM -down-> ToolReg : tools[]
+T1 -down-> Meituan
+T2 -down-> Amap
+T3 -down-> Amap
+T4 -down-> Amap
+T5 -down-> QWeather
+T6 -down-> Railway
+
+' Orchestrator → Data
+N6 -down-> DataLayer : 持久化 final_plan
+PipelineEntry -down-> PlanTable : SSE done → 保存
+
+' ============================================================
+'  图例
+' ============================================================
+legend bottom right
+  |= 颜色 |= 含义 |
+  | <#EFF6FF> 蓝 | API 入口层 |
+  | <#F0F9FF> 深蓝 | 编排器 (Orchestrator) |
+  | <#ECFDF5> 绿 | 智能体层 (Agents) |
+  | <#FFFBEB> 黄 | LLM & 工具层 |
+  | <#F5F3FF> 紫 | 第三方服务 & 数据层 |
+endlegend
+
+@enduml

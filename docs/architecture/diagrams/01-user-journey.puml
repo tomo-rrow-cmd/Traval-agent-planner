@@ -1,0 +1,51 @@
+@startuml 01-user-journey
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam activityBackgroundColor #F5F5F5
+skinparam activityBorderColor #888888
+skinparam activityDiamondBackgroundColor #FFFDE7
+skinparam ArrowColor #555555
+
+title 旅行规划系统 — 用户使用主流程
+
+start
+:用户注册 / 登录;
+:创建旅行规划会话;
+:用自然语言描述需求\n(目的地 / 出发地 / 天数 / 预算等);
+
+repeat
+  :系统理解对话，提取结构化参数;
+  if (需求是否清晰?) then (否)
+    :系统给出选项引导确认 (V2.0);
+  else (是)
+  endif
+  :用户回答 / 选择 / 补充;
+repeat while (4项必填信息完整?) is (否) not (是)
+
+:需求就绪，触发智能规划;
+:实时查看规划进度;
+
+fork
+  :景点规划中…;
+fork again
+  :美食规划中…;
+fork again
+  :住宿规划中…;
+end fork
+
+:方案决策 (整合每日行程);
+:交通规划 (市内 + 大交通);
+:预算核算 (费用明细);
+:收到完整旅行方案;
+
+if (需要微调?) then (是)
+  :自然语言描述修改\n(如"第二天下午换个近点的咖啡馆");
+  :系统精准定位，局部重算;
+  :收到更新后方案;
+else (否)
+endif
+
+:确认方案，定稿;
+stop
+
+@enduml

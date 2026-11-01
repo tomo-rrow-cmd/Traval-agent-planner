@@ -1,0 +1,61 @@
+@startuml 02-product-functions
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentBackgroundColor #F5F5F5
+skinparam componentBorderColor #888888
+skinparam packageBackgroundColor #FAFAFA
+skinparam ArrowColor #555555
+
+title 旅行规划系统 — 产品功能架构
+
+package "旅行规划系统" {
+
+  package "用户交互层" #E8F5E9 {
+    component "对话管理\n(多轮对话 / 上下文延续)" as DM
+    component "需求采集\n(自动提取 / 缺失识别)" as RC
+    component "选项引导 (V2.0)" as OG
+    component "模糊确认 (V2.0)" as FC
+    component "行程微调 (V2.0)" as AT
+  }
+
+  package "智能规划层" #E3F2FD {
+    component "景点推荐\n(检索 / 排序分天 / 推荐理由)" as AR
+    component "美食推荐\n(检索 / 分配餐食 / 推荐理由)" as FD
+    component "住宿推荐\n(美团优先 / 降级兜底)" as HT
+    component "方案决策\n(整合每日行程)" as DC
+    component "交通规划\n(市内交通 + 大交通)" as TR
+    component "预算核算\n(费用 / 预警 / 人均)" as BG
+    component "天气联动 (V2.0)" as WT
+  }
+
+  package "方案输出层" #FFF3E0 {
+    component "流式进度\n(实时阶段推送)" as SP
+    component "完整方案\n(行程名 / 概览 / 每日 / 预算)" as FP
+    component "信息来源标注 (V2.0)" as SR
+    component "备选方案 Plan B (V2.0)" as PB
+    component "可跳转链接 (V2.0)" as LK
+  }
+
+  package "基础服务层" #F3E5F5 {
+    component "用户鉴权\n(JWT / bcrypt)" as AU
+    component "会话管理\n(创建 / 历史 / 持久化)" as CV
+    component "数据服务\n(三级兜底)" as DS
+  }
+}
+
+RC --> DC : 需求就绪触发
+AR --> DC
+FD --> DC
+HT --> DC
+DC --> TR
+TR --> BG
+BG --> FP
+SP --> FP : 实时反馈
+
+AU --> CV
+CV --> DM
+DS --> AR
+DS --> FD
+DS --> HT
+
+@enduml

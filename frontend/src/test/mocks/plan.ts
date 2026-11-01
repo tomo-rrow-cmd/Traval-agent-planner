@@ -1,0 +1,231 @@
+import type { ApiResponse, PaginatedData } from '@/types/api'
+import type { PlanSummary, PlanResponse, ActivityType } from '@/types/plan'
+
+export const mockPlanSummary: PlanSummary = {
+  id: 'plan_mock001',
+  title: '云南大理5日游',
+  destination: '云南大理',
+  start_date: '2026-07-01',
+  end_date: '2026-07-05',
+  days: 5,
+  estimated_cost: 4500,
+  travel_style: '深度游',
+  status: 'completed',
+  is_favorite: false,
+  created_at: '2026-07-01T10:00:00Z',
+}
+
+export const mockPlanList: PaginatedData<PlanSummary> = {
+  list: [
+    mockPlanSummary,
+    {
+      id: 'plan_mock002',
+      title: '北京周末游',
+      destination: '北京',
+      start_date: '2026-07-02',
+      end_date: '2026-07-03',
+      days: 2,
+      estimated_cost: 2000,
+      travel_style: '休闲游',
+      status: 'completed',
+      is_favorite: true,
+      created_at: '2026-07-02T14:00:00Z',
+    },
+    {
+      id: 'plan_mock003',
+      title: '成都美食之旅',
+      destination: '成都',
+      start_date: '2026-07-03',
+      end_date: '2026-07-05',
+      days: 3,
+      estimated_cost: 3000,
+      travel_style: '美食游',
+      status: 'completed',
+      is_favorite: false,
+      created_at: '2026-07-03T09:00:00Z',
+    },
+  ],
+  total: 3,
+  page: 1,
+  page_size: 20,
+  total_pages: 1,
+}
+
+export const mockPlanDetail: PlanResponse = {
+  id: 'plan_mock001',
+  title: '云南大理5日游',
+  destination: '云南大理',
+  departure: '出发地',
+  start_date: '2026-07-01',
+  end_date: '2026-07-05',
+  days: 5,
+  people_count: 2,
+  crowd_type: '朋友',
+  total_budget: 4500,
+  estimated_cost: 4500,
+  travel_style: '深度游',
+  status: 'completed',
+  version: 1,
+  is_favorite: false,
+  view_count: 42,
+  overview: {
+    highlights: ['苍山洱海壮丽风光', '古城白族文化体验', '地道云南美食'],
+    total_distance_km: 120,
+    transport_modes: ['步行', '公交', '出租车'],
+  },
+  daily_itinerary: [
+    {
+      day: 1,
+      date: '2026-07-15',
+      date_label: '第一天',
+      weather_summary: '晴，22-28°C',
+      accommodation: {
+        hotel_name: '大理古城花筑奢酒店',
+        address: '古城人民路88号',
+        room_type: '标准间',
+        price: 450,
+        rating: 4.5,
+        check_in: '14:00',
+        check_out: '12:00',
+        location: { lat: 25.68, lng: 100.16 },
+      },
+      activities: [
+        {
+          type: 'attraction' as ActivityType,
+          title: '大理古城',
+          time_slot: '09:00-11:00',
+          description: '漫步古城，感受白族文化',
+          location: { lat: 25.68, lng: 100.16 },
+          duration_minutes: 120,
+          cost: 0,
+          tags: ['文化', '历史'],
+          tips: '建议早起避开人流',
+          rating: 4.5,
+        },
+        {
+          type: 'food' as ActivityType,
+          title: '白族风味午餐',
+          time_slot: '12:00-13:00',
+          description: '品尝地道白族美食',
+          location: { lat: 25.68, lng: 100.16 },
+          duration_minutes: 60,
+          cost: 80,
+          tags: ['美食', '本地'],
+          tips: '推荐酸辣鱼和乳扇',
+          rating: 4.0,
+        },
+        {
+          type: 'shopping' as ActivityType,
+          title: '洋人街夜市',
+          time_slot: '19:00-21:00',
+          description: '逛夜市，买手工艺品',
+          location: { lat: 25.68, lng: 100.16 },
+          duration_minutes: 120,
+          cost: 0,
+          tags: ['购物', '夜市'],
+          tips: '可以适当砍价',
+        },
+      ],
+      day_cost: 80,
+      day_summary: '古城文化探索日',
+    },
+    {
+      day: 2,
+      date: '2026-07-16',
+      date_label: '第二天',
+      weather_summary: '多云，20-26°C',
+      accommodation: {
+        hotel_name: '大理古城花筑奢酒店',
+        address: '古城人民路88号',
+        room_type: '标准间',
+        price: 450,
+        rating: 4.5,
+        check_in: '14:00',
+        check_out: '12:00',
+        location: { lat: 25.68, lng: 100.16 },
+      },
+      activities: [
+        {
+          type: 'attraction' as ActivityType,
+          title: '苍山国家地质公园',
+          time_slot: '08:00-14:00',
+          description: '乘坐缆车上苍山，俯瞰洱海全景',
+          location: { lat: 25.69, lng: 100.10 },
+          duration_minutes: 360,
+          cost: 120,
+          tags: ['自然', '徒步'],
+          tips: '带外套，山顶温度较低',
+          rating: 4.8,
+        },
+        {
+          type: 'food' as ActivityType,
+          title: '苍山脚下农家菜',
+          time_slot: '14:00-15:00',
+          description: '下山后品尝地道农家菜',
+          location: { lat: 25.69, lng: 100.10 },
+          duration_minutes: 60,
+          cost: 60,
+          tags: ['美食', '农家'],
+          tips: '',
+        },
+      ],
+      day_cost: 180,
+      day_summary: '苍山洱海自然风光日',
+    },
+  ],
+  traffic_summary: {
+    daily_plan: [],
+    total_traffic_cost: 300,
+  },
+  food_summary: {
+    recommendations: [
+      { day: 1, meals: ['白族风味餐厅', '古城小吃街'] },
+    ],
+  },
+  budget_detail: {
+    total: 4500,
+    accommodation: 2250,
+    food: 800,
+    attractions: 240,
+    traffic: 300,
+    shopping: 500,
+    other: 410,
+  },
+  souvenir_recommendations: [
+    { name: '白族扎染', description: '手工扎染方巾', estimated_price: '¥80', buy_place: '大理古城扎染坊' },
+    { name: '下关沱茶', description: '云南特产普洱茶', estimated_price: '¥150', buy_place: '古城茶叶店' },
+  ],
+  weather_forecast: [
+    { date: '2026-07-15', weather: '晴', temp_high: 28, temp_low: 22, wind: '无持续风向', humidity: 60, precipitation: 0, aqi: 50, advice: '适合出行' },
+    { date: '2026-07-16', weather: '多云', temp_high: 26, temp_low: 20, wind: '无持续风向', humidity: 65, precipitation: 0, aqi: 45, advice: '适合出行' },
+  ],
+  packing_list: ['防晒霜', '遮阳帽', '舒适运动鞋', '雨伞'],
+  tips: ['大理海拔约2000米，注意防晒', '古城内多为石板路，建议穿舒适的鞋子'],
+  avoid_list: ['避免雨季前往苍山', '古城内避免乘坐黑车'],
+  created_at: '2026-07-01T10:00:00Z',
+  updated_at: '2026-07-01T10:05:00Z',
+}
+
+export const mockPlanListResponse: ApiResponse<PaginatedData<PlanSummary>> = {
+  code: 0,
+  message: '',
+  data: mockPlanList,
+}
+
+export const mockPlanDetailResponse: ApiResponse<PlanResponse> = {
+  code: 0,
+  message: '',
+  data: mockPlanDetail,
+}
+
+export const mockFavoriteToggleResponse: ApiResponse<{ is_favorite: boolean }> = {
+  code: 0,
+  message: '',
+  data: { is_favorite: true },
+}
+
+export const mockExportTaskResponse: ApiResponse<{ task_id: string; status: string; estimated_wait_seconds: number }> = {
+  code: 0,
+  message: '',
+  data: { task_id: 'task_mock001', status: 'processing', estimated_wait_seconds: 30 },
+}

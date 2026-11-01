@@ -1,0 +1,194 @@
+stages:
+  - validate
+  - test
+  - build
+  - deploy
+
+default:
+  tags:
+    - shell
+
+variables:
+  GIT_STRATEGY: "fetch"
+  GIT_DEPTH: "0"
+  GIT_CLEAN_FLAGS: "-ffd"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  CONDA_ENV_NAME: "ai-travel-planning"
+  PYTHONDONTWRITEBYTECODE: "1"
+  PYTHONUNBUFFERED: "1"
+  DEBUG: "0"
+  LOG_LEVEL: "INFO"
+  SECRET_KEY: "ci-secret-key"
+  DATABASE_URL: "postgresql+asyncpg://ci:ci@localhost:5432/travel_planner"
+  REDIS_URL: "redis://localhost:6379/0"
+
+cache:
+  key:
+    files:
+      - requirements.txt
+  paths:
+    - .cache/pip/
+
+# ── Python job template ────────────────────────────────────────────────
+.python_job:
+  before_script:
+    # Purge stale bytecode from prior shell-runner runs
+    - find . -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
+    - find . -name '*.pyc' -delete 2>/dev/null || true
+    # Conda environment setup
+    - |
+      if [ -f "$HOME/miniconda3/etc/profile.d/conda.sh" ]; then
+        . "$HOME/miniconda3/etc/profile.d/conda.sh"
+      fi
+      conda --version
+      conda run --no-capture-output -n "$CONDA_ENV_NAME" python --version
+      conda run --no-capture-output -n "$CONDA_ENV_NAME" python -m pip install -r requirements.txt
+
+# ── Node.js job template ───────────────────────────────────────────────
+.node_job:
+  before_script:
+    # Ensure Node.js 18+ is available on the shell runner
+    - |
+      if command -v node >/dev/null 2>&1; then
+        NODE_VERSION=$(node --version | sed 's/v//' | cut -d. -f1)
+        if [ "$NODE_VERSION" -lt 18 ]; then
+          echo "ERROR: Node.js >= 18 required, found $(node --version)"
+          exit 1
+        fi
+      elif [ -f "$HOME/.nvm/nvm.sh" ]; then
+        . "$HOME/.nvm/nvm.sh"
+        nvm use 20 || nvm install 20
+      else
+        echo "ERROR: Node.js >= 18 not found. Install nvm or node on the shell runner."
+        exit 1
+      fi
+      node --version
+      npm --version
+    - rm -rf frontend/node_modules
+    - npm --prefix frontend ci
+
+# ═══════════════════════════════════════════════════════════════════════
+# VALIDATE stage — fast syntax / type checks
+# ═══════════════════════════════════════════════════════════════════════
+
+compile:
+  stage: validate
+  extends: .python_job
+  script:
+    - conda run --no-capture-output -n "$CONDA_ENV_NAME" python -m compileall app tests scripts main.py
+
+frontend:lint:
+  stage: validate
+  extends: .node_job
+  allow_failure: true
+  script:
+    - npm --prefix frontend run lint -- --max-warnings 0
+
+frontend:typecheck:
+  stage: validate
+  extends: .node_job
+  script:
+    - (cd frontend && ./node_modules/.bin/vue-tsc -b)
+
+# ═══════════════════════════════════════════════════════════════════════
+# TEST stage — offline unit tests
+# ═══════════════════════════════════════════════════════════════════════
+
+pytest:
+  stage: test
+  extends: .python_job
+  script:
+    - >
+      conda run --no-capture-output -n "$CONDA_ENV_NAME" python -m pytest
+      -m "not integration" tests
+      --cov=app
+      --cov-report=term-missing
+      --cov-report=xml:coverage.xml
+      --cov-report=html:coverage-html
+      --cov-fail-under=84
+  artifacts:
+    name: "coverage-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - coverage-html/
+    expire_in: 7 days
+
+frontend:test:
+  stage: test
+  extends: .node_job
+  script:
+    - (cd frontend && ./node_modules/.bin/vitest run --config vitest.config.ts --coverage)
+  artifacts:
+    name: "frontend-coverage-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - frontend/coverage/
+    expire_in: 7 days
+
+# ═══════════════════════════════════════════════════════════════════════
+# BUILD stage — artifacts
+# ═══════════════════════════════════════════════════════════════════════
+
+frontend:build:
+  stage: build
+  extends: .node_job
+  dependencies: []
+  script:
+    - (cd frontend && npm run build)
+  artifacts:
+    name: "frontend-dist-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - frontend/dist/
+    expire_in: 7 days
+
+docker_image:
+  stage: build
+  dependencies: []
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      when: manual
+      allow_failure: true
+    - if: "$CI_COMMIT_TAG"
+      when: manual
+      allow_failure: true
+  script:
+    - |
+      if ! command -v docker >/dev/null 2>&1; then
+        echo "Docker is not installed on this shell runner; skipping image build."
+        exit 0
+      fi
+      if ! docker info >/dev/null 2>&1; then
+        echo "Docker daemon is not reachable from this shell runner; skipping image build."
+        exit 0
+      fi
+    - docker build --pull -t "ai-travel-planner:$CI_COMMIT_SHORT_SHA" .
+    - |
+      if [ -n "$CI_REGISTRY" ] && [ -n "$CI_REGISTRY_IMAGE" ]; then
+        echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+        docker tag "ai-travel-planner:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+        docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
+      else
+        echo "CI_REGISTRY or CI_REGISTRY_IMAGE is not configured; skipping image push."
+      fi
+    - |
+      if [ "$CI_COMMIT_BRANCH" = "dev" ] && [ -n "$CI_REGISTRY" ] && [ -n "$CI_REGISTRY_IMAGE" ]; then
+        docker tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE:dev"
+        docker push "$CI_REGISTRY_IMAGE:dev"
+      fi
+    - |
+      if [ -n "$CI_COMMIT_TAG" ] && [ -n "$CI_REGISTRY" ] && [ -n "$CI_REGISTRY_IMAGE" ]; then
+        docker tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA" "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+        docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_TAG"
+      fi
+
+# ═══════════════════════════════════════════════════════════════════════
+# DEPLOY stage
+# ═══════════════════════════════════════════════════════════════════════
+
+deploy_staging:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "dev"'
+      when: manual
+      allow_failure: true
+  script:
+    - 'echo "Configure DEPLOY_HOST, DEPLOY_USER, DEPLOY_PATH, and runtime secrets before enabling real deployment."'
+    - 'echo "Image candidate: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"'

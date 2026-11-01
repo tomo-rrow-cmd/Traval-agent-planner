@@ -1,0 +1,121 @@
+# ==================== Python ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+.eggs/
+build/
+builds/
+dist/
+.venv/
+venv/
+env/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.hypothesis/
+pip-wheel-metadata/
+
+# 测试与覆盖率产物
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+/coverage-html/
+/frontend/coverage/
+
+# ==================== Node / 前端 ====================
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/*.local
+*.local
+*.tsbuildinfo
+.eslintcache
+stylelintcache
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ==================== Android ====================
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/app/src/tmp/
+android/app/release/
+android/captures/
+android/.cxx/
+android/app/.cxx/
+android/.externalNativeBuild/
+android/app/.externalNativeBuild/
+android/.idea/
+android/local.properties
+android/*.iml
+*.apk
+*.aab
+*.ap_
+*.dex
+*.jks
+*.keystore
+
+# ==================== 数据库 / 向量库 ====================
+*.db
+*.sqlite3
+chroma_data/
+*.chroma_data.lock
+.chroma_data.lock
+.chroma_data.rebuild-*/
+.chroma_data.rebuild-*.lock
+chroma_data.backup-*/
+
+# ==================== 环境变量 / 密钥 ====================
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# ==================== IDE / 编辑器 ====================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*.swo
+*~
+
+# ==================== 操作系统 ====================
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+._*
+
+# ==================== 运行时产物 ====================
+uploads/
+logs/
+*.log
+cache/
+.cache/
+*.tmp
+map.html
+
+# 个人 / 求职材料（不纳入版本库）
+docs/reports/personal/
+
+# 工具本地状态
+.workbuddy/
+.codegraph/
+.claude/

@@ -1,0 +1,144 @@
+/* ============================================================
+   智能旅行规划助手 — 暗色模式
+   对应文档：界面视觉设计系统.md · 第十六章
+   ============================================================ */
+
+[data-theme="dark"] {
+  /* ========== 背景色 ========== */
+  --color-bg-primary: #1C1C1A;
+  --color-bg-secondary: #262622;
+  --color-bg-tertiary: #302E2A;
+  --color-bg-card: #2A2826;
+
+  /* ========== 文字色 ========== */
+  --color-text-primary: #E8E4DE;
+  --color-text-secondary: #B0ABA4;
+  --color-text-tertiary: #7A7670;
+  --color-text-placeholder: #5A5854;
+  --color-text-inverse: #1C1C1A;
+
+  /* ========== 边框 ========== */
+  --color-border: #403E3A;
+  --color-border-light: #353330;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+
+  /* ========== 毛玻璃 ========== */
+  --color-glass-bg: rgba(38, 38, 34, 0.80);
+  --color-glass-border: rgba(255, 255, 255, 0.06);
+
+  /* ========== 阴影（暗色模式用纯黑阴影） ========== */
+  --shadow-color-soft: rgba(0, 0, 0, 0.15);
+  --shadow-color-light: rgba(0, 0, 0, 0.20);
+  --shadow-color-base: rgba(0, 0, 0, 0.30);
+  --shadow-color-strong: rgba(0, 0, 0, 0.40);
+
+  /* ========== 品牌色在暗色模式下微调 ========== */
+  --color-brand-50: #2A221E;
+  --color-brand-100: #3D3028;
+  --color-brand-200: #5A4538;
+  --color-brand-300: #7A5D48;
+  --color-brand-400: #B87A50;
+  --color-brand-500: #E8A87C;
+  --color-brand-600: #D49366;
+  --color-brand-700: #B87A50;
+  --color-brand-800: #96633E;
+  --color-brand-900: #7A4E2F;
+
+  /* ========== 辅助色暗化 ========== */
+  --color-earth: #7A6B50;
+  --color-stone: #8A9A85;
+  --color-sand: #B8A98E;
+  --color-mountain: #6A7A7A;
+  --color-sky: #6AACD0;
+  --color-lake: #4A8A7A;
+  --color-sunset: #9A7A96;
+  --color-gold: #B88E40;
+  --color-success: #4DA87A;
+  --color-warning: #D49828;
+  --color-error: #C8504C;
+  --color-info: #6AACD0;
+
+  /* ========== 活动类型色暗化 ========== */
+  --color-type-transport: #6AACD0;
+  --color-type-transport-bg: #1E2A33;
+  --color-type-transport-icon: #5A9EC4;
+  --color-type-attraction: #4A9A82;
+  --color-type-attraction-bg: #1A2B26;
+  --color-type-attraction-icon: #3D7E6F;
+  --color-type-food: #D4986A;
+  --color-type-food-bg: #2E251E;
+  --color-type-food-icon: #C47A4A;
+  --color-type-shopping: #C07AA8;
+  --color-type-shopping-bg: #2D2028;
+  --color-type-shopping-icon: #A85A8E;
+  --color-type-rest: #8A9A85;
+  --color-type-rest-bg: #222A20;
+  --color-type-rest-icon: #6A8E5A;
+  --color-type-entertainment: #C49848;
+  --color-type-entertainment-bg: #2E281D;
+  --color-type-entertainment-icon: #A87E30;
+  --color-type-accommodation: #9A7A96;
+  --color-type-accommodation-bg: #28202A;
+  --color-type-accommodation-icon: #8A5E86;
+
+  /* ========== 毛玻璃（别名补齐） ========== */
+  --glass-bg: rgba(38, 38, 34, 0.80);
+  --glass-border: rgba(255, 255, 255, 0.06);
+  --glass-shadow: 0 4px 16px rgba(0, 0, 0, 0.30);
+
+  /* ========== 渐变暗化 ========== */
+  --gradient-brand-light: linear-gradient(135deg, #2A221E 0%, #3D3028 100%);
+  --gradient-hero: linear-gradient(160deg, #2A2826 0%, #3D3028 30%, #2A2826 70%, #262622 100%);
+
+  /* ========== 装饰色微调（暗色下更亮一些可见） ========== */
+  --color-art-dot: rgba(232, 168, 124, 0.18);
+  --color-art-line: rgba(232, 168, 124, 0.20);
+  --color-art-accent: rgba(181, 140, 176, 0.25);
+  --color-art-gold: rgba(212, 168, 87, 0.20);
+
+  /* ========== 发光阴影（暗色下更亮） ========== */
+  --shadow-glow-brand: 0 8px 32px rgba(232, 168, 124, 0.35);
+  --shadow-glow-gold: 0 8px 32px rgba(212, 168, 87, 0.35);
+  --shadow-glow-sky: 0 8px 32px rgba(106, 172, 208, 0.30);
+
+  /* ========== 卡片装饰 ========== */
+  --card-ribbon-bg: linear-gradient(135deg, #B87A50, #B88E40);
+
+  /* ========== 按钮 ========== */
+  --btn-primary-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --btn-primary-shadow-hover: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* ========== Dark mode Ant Design overrides ========== */
+[data-theme="dark"] .ant-card {
+  background-color: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+}
+
+[data-theme="dark"] .ant-modal-content,
+[data-theme="dark"] .ant-drawer-content {
+  background-color: var(--color-bg-card) !important;
+}
+
+[data-theme="dark"] .ant-input {
+  background-color: var(--color-bg-secondary) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme="dark"] .ant-btn-default {
+  background-color: transparent !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-primary) !important;
+}
+
+[data-theme="dark"] .ant-notification-notice {
+  background-color: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+}
+
+[data-theme="dark"] .ant-select-dropdown,
+[data-theme="dark"] .ant-dropdown-menu {
+  background-color: var(--color-bg-card) !important;
+  border-color: var(--color-border) !important;
+}

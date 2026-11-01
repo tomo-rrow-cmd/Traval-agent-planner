@@ -1,0 +1,8 @@
+.gradle/
+build/
+*.class
+*.apk
+*.aab
+*.dex
+local.properties
+app/src/tmp/

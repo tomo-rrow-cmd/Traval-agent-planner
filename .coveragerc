@@ -1,0 +1,23 @@
+[run]
+source = app
+
+[report]
+# 排除无法在单元测试中覆盖的模块（需要API密钥/模型下载/外部服务）
+omit =
+    # LLM 客户端封装 — 需要真实API密钥
+    app/services/llm/*
+    # 第三方服务集成 — 需要外部API
+    app/services/third_party/*
+    # RAG/向量 — 需要模型下载和向量数据库
+    app/services/vector/*
+    # 数据库会话 — 基础设施代码
+    app/db/*
+    # 配置 — 纯声明式代码
+    app/config.py
+    # 非核心功能Agent — 旅游日记/行程管理/冲突检测不在核心规划管线内
+    app/agents/travelogue_agent.py
+    app/agents/trip_agent.py
+    app/orchestrator/conflict_detection.py
+    app/utils/pipeline_cache.py
+
+fail_under = 84

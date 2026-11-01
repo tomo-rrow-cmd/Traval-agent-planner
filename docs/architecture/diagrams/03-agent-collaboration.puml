@@ -1,0 +1,212 @@
+@startuml 03-agent-collaboration-structure
+title 智能体协作架构 — 组件关系图（V1.0 + V2.0 扩展）
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam wrapWidth 180
+skinparam maxMessageSize 180
+skinparam defaultFontSize 12
+
+actor "用户" as User
+
+rectangle "旅行规划系统" as System {
+  component "用户交互智能体\n(UserInteraction)" as UserAgent #LightGreen
+  component "编排流水线\n(Pipeline + Graph)" as Orchestrator #LightBlue
+
+  package "核心规划智能体（V1.0 已实现）" #F5F5F5 {
+    component "景点智能体\n(Attraction)" as AttractionAgent #LightGreen
+    component "美食智能体\n(Food)" as FoodAgent #LightGreen
+    component "住宿智能体\n(Hotel)" as HotelAgent #LightYellow
+  }
+
+  component "方案决策智能体\n(Decision)" as DecisionAgent #LightGreen
+  component "交通智能体\n(Traffic)" as TrafficAgent #LightGreen
+  component "预算智能体\n(Budget)" as BudgetAgent #LightGreen
+
+  package "扩展智能体（V2.0 接入）" #EEEEEE {
+    component "天气智能体\n(Weather) [V2.0]" as WeatherAgent #LightGray
+    component "路线优化智能体\n(RouteOptimizer) [V2.0]" as RouteAgent #LightGray
+    component "纪念品智能体\n(Souvenir) [V2.0]" as SouvenirAgent #LightGray
+  }
+
+  note right of DecisionAgent
+    V1.0: 整合三路规划为每日行程
+    V2.0: 逐日人机交互 + 备选方案
+  end note
+}
+
+database "Chroma 向量库\n(RAG 语义检索)" as VectorDB #FFFFCC
+database "PostgreSQL\n(坐标/评分/价格补全)" as PostgreSQL #FFFFCC
+cloud "外部服务" as ExternalCloud {
+  collections "高德 Direction API" as AMap
+  collections "美团酒旅 CLI\n(120s 超时降级)" as Meituan
+  collections "12306 火车票" as Railway
+  collections "和风天气 API [V2.0]" as QWeather
+}
+
+' ===== 用户交互 =====
+User -down-> UserAgent : 自然语言对话
+UserAgent -down-> Orchestrator : 结构化参数\n(目的地/出发地/天数/预算)
+
+' ===== 并行规划 =====
+Orchestrator -down-> AttractionAgent : 目的地/天数/偏好
+Orchestrator -down-> FoodAgent : 目的地/天数/偏好
+Orchestrator -down-> HotelAgent : 目的地/天数/预算
+
+' ===== 数据源 =====
+AttractionAgent -right-> VectorDB : 语义检索景点
+FoodAgent -right-> VectorDB : 语义检索餐厅
+HotelAgent -right-> VectorDB : 语义检索酒店（降级）
+
+AttractionAgent -right-> PostgreSQL : 坐标/评分补全
+FoodAgent -right-> PostgreSQL : 坐标/评分补全
+HotelAgent -right-> PostgreSQL : 价格/评分补全
+
+HotelAgent -down-> Meituan : 优先调美团\n(120s超时→降级向量库)
+FoodAgent -down-> AMap : 补全餐厅坐标
+
+' ===== 串行阶段 =====
+AttractionAgent -down-> Orchestrator : 每日景点
+FoodAgent -down-> Orchestrator : 每日餐食
+HotelAgent -down-> Orchestrator : 酒店推荐
+
+Orchestrator -down-> DecisionAgent : 三路规划结果
+DecisionAgent -down-> Orchestrator : 每日行程
+
+Orchestrator -down-> TrafficAgent : 每日地点坐标
+TrafficAgent -down-> AMap : 市内路径查询
+TrafficAgent -down-> Railway : 大交通查询
+TrafficAgent -down-> Orchestrator : 交通明细
+
+Orchestrator -down-> BudgetAgent : 行程+交通+预算
+BudgetAgent -down-> Orchestrator : final_plan
+
+' ===== V2.0 扩展接入点 =====
+WeatherAgent ..> Orchestrator : [V2.0] 天气预报→调整景点/交通
+RouteAgent ..> Orchestrator : [V2.0] 2-opt 优化游览顺序
+SouvenirAgent ..> Orchestrator : [V2.0] 补充购物推荐
+WeatherAgent ..> QWeather : [V2.0] 和风天气 API
+
+' ===== 输出 =====
+Orchestrator -down-> UserAgent : final_plan
+UserAgent -down-> User : 方案展示 + 流式进度
+
+@enduml
+
+@startuml 03-agent-collaboration-flow
+title 智能体协作流程 — 五阶段流水线（V1.0 + V2.0 演进）
+
+skinparam shadowing false
+skinparam activityBackgroundColor #F5F5F5
+skinparam activityBorderColor #888888
+skinparam defaultFontSize 12
+
+|用户|
+start
+:描述旅行需求\n（目的地/出发地/天数/预算）;
+
+|用户交互智能体|
+:理解对话，提取参数;
+
+if (4项必填完整？) then (否)
+  :追问补充 / 选项引导 (V2.0);
+  |用户|
+  :回答/选择;
+  |用户交互智能体|
+  :继续提取;
+  backward:重新检查;
+else (是)
+endif
+:需求就绪 ✓;
+
+|编排流水线 — 阶段二：并行规划|
+fork
+  partition "景点智能体" {
+    :Chroma 语义检索景点;
+    if (候选 ≥ 3？) then (否)
+      :PostgreSQL 补全;
+      :seed_poi 外部拉取后重搜;
+    endif
+    :LLM 排序分天 + 推荐理由;
+  }
+fork again
+  partition "美食智能体" {
+    :Chroma 语义检索餐厅;
+    if (候选 ≥ 3？) then (否)
+      :PostgreSQL 补全;
+      :seed_poi 外部拉取后重搜;
+    endif
+    :LLM 分配每日餐食 + 推荐理由;
+  }
+fork again
+  partition "住宿智能体" {
+    :美团 CLI 查询酒店（优先）;
+    if (美团超时/失败？) then (是)
+      :降级 Chroma 向量检索;
+    endif
+    :取前2条推荐;
+    note right: V2.0 增加 LLM 筛选\n和推荐理由生成
+  }
+end fork
+
+|编排流水线 — 阶段三：方案决策|
+partition "方案决策智能体" {
+  :整合景点 + 美食 + 住宿 → 每日行程;
+  if (景点 > 阈值？) then (是)
+    :标记需用户确认;
+  endif
+  note right
+    V2.0 增强：
+    · 逐日人机交互（Day1 A/B 选哪个）
+    · 核心节点生成 Plan B
+    · 支持自然语言微调
+  end note
+}
+
+|编排流水线 — 阶段四：交通规划|
+partition "交通智能体" {
+  fork
+    :高德 Direction API\n计算市内每段距离/耗时/费用;
+    if (高德失败？) then (是)
+      :降级 Haversine 直线估算;
+    endif
+  fork again
+    :12306 查询大交通;
+    if (12306 失败？) then (是)
+      :跳过，标记无大交通;
+    endif
+  end fork
+  note right: V2.0 增加换乘方案\n和时间缓冲建议
+}
+
+|编排流水线 — 阶段五：预算核算|
+partition "预算智能体" {
+  :按比例分配预算\n(住宿35% 交通20% 餐饮20% 门票15% 购物10%);
+  :核算实际费用;
+  if (超支？) then (是)
+    :⚠️ 超支预警;
+  endif
+  if (接近85%上限？) then (是)
+    :⚡ 提醒注意;
+  endif
+  :计算人均日均;
+  :组装 final_plan;
+}
+
+|用户|
+:收到完整旅行方案\n(行程名 + 概览 + 每日行程 + 预算明细);
+
+if (需要微调？) then (是)
+  :自然语言局部修改 (V2.0);
+  |系统|
+  :精准定位修改范围 → 局部重算;
+  |用户|
+  :收到更新后方案;
+  backward:继续微调？;
+else (否)
+endif
+
+:确认定稿;
+stop
+
+@enduml
