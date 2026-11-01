@@ -31,6 +31,28 @@
 
 环境要求：Python 3.12、Node.js 20.19+（Vite 8 要求）、PostgreSQL；Redis 为可选缓存。
 
+### 方式一：一键启动（推荐）
+
+```bash
+python scripts/quickstart.py
+```
+
+Windows 用户也可以直接双击仓库根目录的 `quickstart.cmd`：它会自动选用 Python 3.12，结束后保留窗口，不会闪退。
+
+脚本按顺序完成：创建 `.env` → 校验数据库连接与第三方 Key（**已配置且可用则跳过询问**）→ 缺少依赖时自动安装 → 执行 Alembic 迁移 → 启动后端与前端并打开浏览器。
+
+| 参数 | 说明 |
+| --- | --- |
+| `--force` | 忽略现有配置，强制重新校验并询问所有参数 |
+| `--no-frontend` | 只启动后端 |
+| `--no-install` | 不自动安装依赖 |
+| `--no-reload` | 关闭 uvicorn 热重载 |
+| `--no-browser` | 启动后不自动打开浏览器 |
+
+需要准备的输入：PostgreSQL 连接信息、DeepSeek API Key、高德 Web 服务 Key、高德 JSAPI Key（前端地图）。`SECRET_KEY` 缺失时自动生成。
+
+### 方式二：手动启动
+
 ```bash
 # 1. 安装后端依赖
 pip install -r requirements.txt
@@ -42,23 +64,19 @@ cp .env.example .env
 # 3. 安装前端依赖
 npm --prefix frontend install
 
-# 4. 启动后端
+# 4. 建库建表（需要 psql 在 PATH 中）
+python scripts/init_db.py
+
+# 5. 启动后端
 ./scripts/start_backend.sh            # Linux/macOS
 # scripts\start_backend.cmd           # Windows CMD
 # .\scripts\start_backend.ps1         # Windows PowerShell
-
-# 5. 首次运行需要建库建表
-./scripts/start_backend.sh --init-db
 
 # 6. 启动前端（另开终端）
 ./scripts/start_frontend.sh
 ```
 
-也可以一键同时拉起前后端：
-
-```bash
-python main.py
-```
+`python main.py` 可在 macOS/Linux 上同时拉起前后端；该入口依赖 `os.setsid`，Windows 下请使用 `quickstart.py` 或分开启动。
 
 启动后：
 
